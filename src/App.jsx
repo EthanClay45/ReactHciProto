@@ -63,6 +63,7 @@ export default function IPhoneScreen() {
     setPressedApp(null);
   };
 
+  
   const handleTouchStart = (app, e) => {
     e.preventDefault();
     setPressedApp(app.id);
