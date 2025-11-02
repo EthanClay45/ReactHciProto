@@ -117,7 +117,7 @@ export default function IPhoneScreen() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-blue-800 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-blue-800 flex items-center justify-center p-20">
       <div className="relative w-full max-w-sm">
         {/* iPhone Frame */}
         <div className="bg-black rounded-[3rem] p-3 shadow-2xl">

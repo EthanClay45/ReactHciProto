@@ -7,6 +7,11 @@
   color: rgba(46, 35, 35, 0.87);
   background-color: #242424;
 
+  width: 100%;
+  height: 100%;
+  margin: 0; /* Remove default browser margins */
+  padding: 0; /* Remove default browser padding */
+
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
