@@ -1,6 +1,6 @@
 {
   "name": "reacthciproto",
-  "homepage": "https://EthanClay45.github.io/ReactHciProto",
+  "homepage": "https://EthanClay45.github.io/",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "./node_modules/gh-pages/bin/gh-pages-clean.js && gh-pages -d dist"
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.16",
