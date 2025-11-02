@@ -1,7 +1,7 @@
 {
   "name": "reacthciproto",
-  "private": true,
   "homepage": "https://EthanClay45.github.io/",
+  "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
