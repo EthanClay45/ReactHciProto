@@ -1,289 +1,489 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Clock, MessageSquare, Camera, Image, Mail, Music, Video, Phone, Globe, Settings, Map, Calendar, Book, Calculator, Heart } from 'lucide-react';
+import React, { useState } from 'react';
+import { CreditCard, Plane, Plus, Trash2, Edit2, TrendingUp, Award, Calendar, Percent, X, ChevronDown, ChevronUp } from 'lucide-react';
 
-const apps = [
-  { id: 1, name: 'Messages', icon: MessageSquare, color: 'bg-green-500' },
-  { id: 2, name: 'Camera', icon: Camera, color: 'bg-gray-600' },
-  { id: 3, name: 'Photos', icon: Image, color: 'bg-blue-500' },
-  { id: 4, name: 'Mail', icon: Mail, color: 'bg-blue-600' },
-  { id: 5, name: 'Music', icon: Music, color: 'bg-red-500' },
-  { id: 6, name: 'Videos', icon: Video, color: 'bg-purple-600' },
-  { id: 7, name: 'Phone', icon: Phone, color: 'bg-green-600' },
-  { id: 8, name: 'Safari', icon: Globe, color: 'bg-blue-400' },
-  { id: 9, name: 'Settings', icon: Settings, color: 'bg-gray-500' },
-  { id: 10, name: 'Maps', icon: Map, color: 'bg-green-400' },
-  { id: 11, name: 'Calendar', icon: Calendar, color: 'bg-red-600' },
-  { id: 12, name: 'Books', icon: Book, color: 'bg-orange-500' },
-  { id: 13, name: 'Calculator', icon: Calculator, color: 'bg-gray-700' },
-  { id: 14, name: 'Clock', icon: Clock, color: 'bg-black' },
-  { id: 15, name: 'Health', icon: Heart, color: 'bg-pink-500' }
-];
+const CreditCardDashboard = () => {
+  const [cards, setCards] = useState([
+    { id: 1, name: 'Chase Sapphire Reserve', points: 75000, type: 'Travel', color: 'bg-gradient-to-br from-slate-700 to-slate-900', issuer: 'Chase', lastUpdated: '2 days ago', rewardsProgram: 'Chase Ultimate Rewards' },
+    { id: 2, name: 'American Express Gold', points: 45000, type: 'Dining', color: 'bg-gradient-to-br from-slate-600 to-slate-800', issuer: 'Amex', lastUpdated: '1 week ago', rewardsProgram: 'Amex Membership Rewards' },
+    { id: 3, name: 'Capital One Venture', points: 32000, type: 'Travel', color: 'bg-gradient-to-br from-gray-700 to-gray-900', issuer: 'Capital One', lastUpdated: '3 days ago', rewardsProgram: 'Capital One Miles' }
+  ]);
 
-export default function IPhoneScreen() {
-  const [contextMenu, setContextMenu] = useState(null);
-  const [showTimePicker, setShowTimePicker] = useState(false);
-  const [selectedApp, setSelectedApp] = useState(null);
-  const [hours, setHours] = useState(0);
-  const [minutes, setMinutes] = useState(0);
-  const longPressTimer = useRef(null);
-  const [pressedApp, setPressedApp] = useState(null);
-  const [appsWithLimits, setAppsWithLimits] = useState(new Set());
+  const [travelDeals] = useState([
+    { id: 1, destination: 'Tokyo, Japan', points: 60000, type: 'Round-trip Flight', airline: 'ANA', savings: '$850', image: '🗾', class: 'Economy', cardId: 1 },
+    { id: 2, destination: 'Paris, France', points: 55000, type: 'Round-trip Flight', airline: 'Air France', savings: '$780', image: '🗼', class: 'Economy', cardId: 1 },
+    { id: 3, destination: 'Cancun, Mexico', points: 25000, type: 'Round-trip Flight', airline: 'United', savings: '$420', image: '🏖️', class: 'Economy', cardId: 1 },
+    { id: 4, destination: 'London, UK', points: 50000, type: 'Round-trip Flight', airline: 'British Airways', savings: '$720', image: '🇬🇧', class: 'Business', cardId: 2 },
+    { id: 5, destination: 'Dubai, UAE', points: 70000, type: 'Round-trip Flight', airline: 'Emirates', savings: '$950', image: '🏙️', class: 'Economy', cardId: 2 },
+    { id: 6, destination: 'Bali, Indonesia', points: 45000, type: 'Round-trip Flight', airline: 'Singapore Airlines', savings: '$650', image: '🌴', class: 'Economy', cardId: 3 },
+    { id: 7, destination: 'Barcelona, Spain', points: 40000, type: 'Round-trip Flight', airline: 'Iberia', savings: '$580', image: '🇪🇸', class: 'Economy', cardId: 3 },
+    { id: 8, destination: 'Sydney, Australia', points: 80000, type: 'Round-trip Flight', airline: 'Qantas', savings: '$1100', image: '🦘', class: 'Economy', cardId: 1 }
+  ]);
 
-  const handleMouseDown = (app, e) => {
-    if (appsWithLimits.has(app.id)) return;
-    e.preventDefault();
-    e.stopPropagation();
-    setPressedApp(app.id);
-    const rect = e.currentTarget.getBoundingClientRect();
-    longPressTimer.current = setTimeout(() => {
-      setContextMenu({
-        app,
-        x: rect.left + rect.width / 2,
-        y: rect.bottom
-      });
-      setPressedApp(null);
-    }, 600);
-  };
+  const [showAddCard, setShowAddCard] = useState(false);
+  const [editingCard, setEditingCard] = useState(null);
+  const [expandedCard, setExpandedCard] = useState(null);
+  const [newCard, setNewCard] = useState({ name: '', points: '', type: 'Travel', color: 'bg-gradient-to-br from-slate-700 to-slate-900', issuer: '', rewardsProgram: '' });
+  const [activeTab, setActiveTab] = useState('overview');
 
-  const handleMouseUp = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
+  const totalPoints = cards.reduce((sum, card) => sum + card.points, 0);
+
+  const cardColors = [
+    'bg-gradient-to-br from-slate-700 to-slate-900',
+    'bg-gradient-to-br from-slate-600 to-slate-800',
+    'bg-gradient-to-br from-slate-500 to-slate-700',
+    'bg-gradient-to-br from-gray-700 to-gray-900',
+    'bg-gradient-to-br from-gray-600 to-gray-800',
+    'bg-gradient-to-br from-zinc-700 to-zinc-900',
+    'bg-gradient-to-br from-zinc-600 to-zinc-800',
+    'bg-gradient-to-br from-neutral-700 to-neutral-900'
+  ];
+
+  const handleAddCard = () => {
+    if (newCard.name && newCard.points) {
+      setCards([...cards, {
+        id: Date.now(),
+        name: newCard.name,
+        points: parseInt(newCard.points),
+        type: newCard.type,
+        color: newCard.color,
+        issuer: newCard.issuer || 'Other',
+        lastUpdated: 'Just now',
+        rewardsProgram: newCard.rewardsProgram || 'Points'
+      }]);
+      setNewCard({ name: '', points: '', type: 'Travel', color: 'bg-gradient-to-br from-slate-700 to-slate-900', issuer: '', rewardsProgram: '' });
+      setShowAddCard(false);
     }
-    setPressedApp(null);
   };
 
-  const handleMouseLeave = () => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
+  const handleDeleteCard = (id) => {
+    setCards(cards.filter(card => card.id !== id));
+  };
+
+  const handleEditCard = (card) => {
+    setEditingCard(card.id);
+    setNewCard({ name: card.name, points: card.points.toString(), type: card.type, color: card.color, issuer: card.issuer, rewardsProgram: card.rewardsProgram });
+  };
+
+  const handleUpdateCard = () => {
+    if (newCard.name && newCard.points) {
+      setCards(cards.map(card => 
+        card.id === editingCard 
+          ? { ...card, name: newCard.name, points: parseInt(newCard.points), type: newCard.type, color: newCard.color, issuer: newCard.issuer, rewardsProgram: newCard.rewardsProgram, lastUpdated: 'Just now' }
+          : card
+      ));
+      setEditingCard(null);
+      setNewCard({ name: '', points: '', type: 'Travel', color: 'bg-gradient-to-br from-slate-700 to-slate-900', issuer: '', rewardsProgram: '' });
     }
-    setPressedApp(null);
   };
 
-  
-  const handleTouchStart = (app, e) => {
-    e.preventDefault();
-    setPressedApp(app.id);
-    const touch = e.touches[0];
-    const rect = e.currentTarget.getBoundingClientRect();
-    longPressTimer.current = setTimeout(() => {
-      setContextMenu({
-        app,
-        x: rect.left + rect.width / 2,
-        y: rect.bottom
-      });
-      setPressedApp(null);
-    }, 600);
+  const getCardForDeal = (cardId) => {
+    return cards.find(card => card.id === cardId);
   };
 
-  const handleTouchEnd = (e) => {
-    e.preventDefault();
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-    setPressedApp(null);
+  const canAffordWithCard = (deal) => {
+    const card = getCardForDeal(deal.cardId);
+    return card && card.points >= deal.points;
   };
-
-  const handleSetTimeLimit = () => {
-    setSelectedApp(contextMenu.app);
-    setShowTimePicker(true);
-    setContextMenu(null);
-  };
-
-  const handleConfirmTimeLimit = () => {
-    setAppsWithLimits(prev => new Set([...prev, selectedApp.id]));
-    alert(`Time limit set for ${selectedApp.name}: ${hours}h ${minutes}m`);
-    setShowTimePicker(false);
-    setSelectedApp(null);
-    setHours(0);
-    setMinutes(0);
-  };
-
-  const closeAll = () => {
-    setContextMenu(null);
-    setShowTimePicker(false);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (longPressTimer.current) {
-        clearTimeout(longPressTimer.current);
-      }
-    };
-  }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-blue-800 flex items-center justify-center p-20">
-      <div className="relative w-full max-w-sm">
-        {/* iPhone Frame */}
-        <div className="bg-black rounded-[3rem] p-3 shadow-2xl">
-          <div className="bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 rounded-[2.5rem] overflow-hidden relative">
-            {/* Notch */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-7 bg-black rounded-b-3xl z-10"></div>
-            
-            {/* Status Bar */}
-            <div className="relative z-0 px-8 pt-2 pb-1 flex justify-between items-center text-white text-xs">
-              <span className="font-semibold">9:41</span>
+    <div className="min-h-screen w-screen bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center p-4">
+      {/* iPhone 14 Pro Device Frame - Fixed 390x844px */}
+      <div className="relative w-[390px] h-[844px] bg-black rounded-[55px] p-2 shadow-2xl flex-shrink-0">
+        
+        {/* Dynamic Island */}
+        <div className="absolute top-[18px] left-1/2 -translate-x-1/2 w-[126px] h-[37px] bg-black rounded-full z-50"></div>
+        
+        {/* iPhone Screen */}
+        <div className="w-full h-full bg-white rounded-[48px] overflow-hidden flex flex-col">
+          
+          {/* Status Bar - Fixed Height */}
+          <div className="bg-white px-8 pt-[54px] pb-2 flex-shrink-0">
+            <div className="flex justify-between items-center text-xs font-semibold">
+              <span>9:41</span>
               <div className="flex gap-1 items-center">
-                <div className="w-4 h-3 border border-white rounded-sm"></div>
-                <div className="w-1 h-3 bg-white rounded-sm"></div>
+                <svg width="17" height="12" viewBox="0 0 17 12" fill="none">
+                  <rect x="0.5" y="0.5" width="16" height="11" rx="2.5" stroke="black"/>
+                  <path d="M17 4V8C17.8 7.66667 18.5 7 18.5 6C18.5 5 17.8 4.33333 17 4Z" fill="black"/>
+                  <rect x="2" y="2" width="13" height="8" rx="1" fill="black"/>
+                </svg>
               </div>
             </div>
+          </div>
 
-            {/* App Grid */}
-            <div className="px-6 py-8 grid grid-cols-4 gap-6 min-h-[600px]">
-              {apps.map((app) => {
-                const Icon = app.icon;
-                return (
-                  <div
-                    key={app.id}
-                    className="flex flex-col items-center gap-1 cursor-pointer select-none"
-                    onMouseDown={(e) => handleMouseDown(app, e)}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseLeave}
-                    onTouchStart={(e) => handleTouchStart(app, e)}
-                    onTouchEnd={handleTouchEnd}
-                    onContextMenu={(e) => e.preventDefault()}
-                  >
-                    <div
-                      className={`w-14 h-14 ${app.color} rounded-2xl flex items-center justify-center shadow-lg transition-transform ${
-                        pressedApp === app.id ? 'scale-95' : 'scale-100'
-                      } ${
-                        appsWithLimits.has(app.id) ? 'grayscale opacity-60' : ''
-                      }`}
-                    >
-                      <Icon className="w-8 h-8 text-white" strokeWidth={1.5} />
-                    </div>
-                    <span className="text-white text-xs text-center leading-tight">
-                      {app.name}
-                    </span>
-                  </div>
-                );
-              })}
+          {/* App Header - Fixed Height */}
+          <div className="bg-blue-600 text-white px-4 py-4 flex-shrink-0">
+            <div className="flex items-center gap-2 mb-3">
+              <Award className="w-6 h-6" />
+              <h1 className="text-xl font-bold">Rewards Tracker</h1>
             </div>
+            
+            {/* Tab Navigation */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setActiveTab('overview')}
+                className={`flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-all ${
+                  activeTab === 'overview' 
+                    ? 'bg-white text-blue-600' 
+                    : 'bg-blue-500 text-white'
+                }`}
+              >
+                Dashboard
+              </button>
+              <button
+                onClick={() => setActiveTab('travel')}
+                className={`flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-all ${
+                  activeTab === 'travel' 
+                    ? 'bg-white text-blue-600' 
+                    : 'bg-blue-500 text-white'
+                }`}
+              >
+                Travel Deals
+              </button>
+            </div>
+          </div>
 
-            {/* Home Indicator */}
-            <div className="pb-2 flex justify-center">
-              <div className="w-32 h-1 bg-white rounded-full opacity-50"></div>
+          {/* Main Content Area - Scrollable with Always-Visible Scrollbar */}
+          <div className="flex-1 overflow-y-scroll bg-white">
+            <div className="p-4 pb-20">
+              
+              {/* Dashboard Tab */}
+              {activeTab === 'overview' && (
+                <div className="w-full space-y-4">
+                  
+                  {/* Total Points Hero Card */}
+                  <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-5 text-white shadow-lg">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-blue-100 text-xs mb-1">Total Points</p>
+                        <h2 className="text-4xl font-bold mb-1">{totalPoints.toLocaleString()}</h2>
+                        <p className="text-blue-100 text-xs">Across {cards.length} cards</p>
+                      </div>
+                      <TrendingUp className="w-10 h-10 text-blue-300 opacity-50" />
+                    </div>
+                  </div>
+
+                  {/* Quick Stats Grid */}
+                  <div className="grid grid-cols-3 gap-2 pt-2">
+                    <div className="bg-white rounded-xl p-3 shadow-md border border-slate-200">
+                      <div className="bg-blue-100 w-8 h-8 rounded-lg flex items-center justify-center mb-2">
+                        <Percent className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <p className="text-lg font-bold text-slate-900">1.5¢</p>
+                      <p className="text-xs text-slate-600">Per point</p>
+                    </div>
+
+                    <div className="bg-white rounded-xl p-3 shadow-md border border-slate-200">
+                      <div className="bg-green-100 w-8 h-8 rounded-lg flex items-center justify-center mb-2">
+                        <TrendingUp className="w-4 h-4 text-green-600" />
+                      </div>
+                      <p className="text-lg font-bold text-green-600">+12.5K</p>
+                      <p className="text-xs text-slate-600">This month</p>
+                    </div>
+
+                    <div className="bg-white rounded-xl p-3 shadow-md border border-slate-200">
+                      <div className="bg-purple-100 w-8 h-8 rounded-lg flex items-center justify-center mb-2">
+                        <Plane className="w-4 h-4 text-purple-600" />
+                      </div>
+                      <p className="text-lg font-bold text-slate-900">{travelDeals.filter(deal => canAffordWithCard(deal)).length}</p>
+                      <p className="text-xs text-slate-600">Available</p>
+                    </div>
+                  </div>
+
+                  {/* Credit Cards List - Collapsible */}
+                  <div className="space-y-3">
+                    {cards.map(card => {
+                      const isExpanded = expandedCard === card.id;
+                      
+                      return (
+                        <div key={card.id} className="bg-white rounded-xl shadow-md overflow-hidden border border-slate-200">
+                          
+                          {/* Card Preview - Always Visible */}
+                          <div 
+                            onClick={() => setExpandedCard(isExpanded ? null : card.id)}
+                            className="active:bg-slate-50 transition-colors cursor-pointer"
+                          >
+                            <div className="flex items-center justify-between p-4">
+                              <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <div className={`w-12 h-12 ${card.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                                  <CreditCard className="w-6 h-6 text-white" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-bold text-slate-900 text-sm truncate">{card.name}</h4>
+                                  <p className="text-slate-600 text-xs">{card.issuer}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <div className="text-right">
+                                  <p className="text-xl font-bold text-slate-900">{card.points.toLocaleString()}</p>
+                                  <p className="text-slate-500 text-xs">pts</p>
+                                </div>
+                                {isExpanded ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Card Details - Expanded View */}
+                          {isExpanded && (
+                            <div className="border-t border-slate-200 bg-slate-50 p-4">
+                              <div className="space-y-3 mb-4">
+                                <div>
+                                  <p className="text-slate-600 text-xs mb-0.5">Rewards Program</p>
+                                  <p className="font-semibold text-slate-900 text-sm">{card.rewardsProgram}</p>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <p className="text-slate-600 text-xs mb-0.5">Type</p>
+                                    <p className="font-semibold text-slate-900 text-sm">{card.type}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-slate-600 text-xs mb-0.5">Updated</p>
+                                    <p className="font-semibold text-slate-900 text-sm">{card.lastUpdated}</p>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEditCard(card);
+                                    setExpandedCard(null);
+                                  }}
+                                  className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold active:scale-95 transition-transform"
+                                >
+                                  <Edit2 className="w-4 h-4" />
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (window.confirm('Delete this card?')) {
+                                      handleDeleteCard(card.id);
+                                      setExpandedCard(null);
+                                    }
+                                  }}
+                                  className="flex-1 flex items-center justify-center gap-1 px-3 py-2 border-2 border-red-200 text-red-600 rounded-lg text-sm font-semibold active:scale-95 transition-transform"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Add Card Button */}
+                  <button
+                    onClick={() => setShowAddCard(true)}
+                    className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-xl font-semibold shadow-md active:scale-95 transition-transform"
+                  >
+                    <Plus className="w-5 h-5" />
+                    Add Card
+                  </button>
+
+                </div>
+              )}
+
+              {/* Travel Deals Tab */}
+              {activeTab === 'travel' && (
+                <div className="w-full space-y-4">
+                  
+                  {/* Tab Header */}
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-900">Travel Deals</h2>
+                    <p className="text-slate-600 text-xs">Redemption opportunities</p>
+                  </div>
+
+                  {/* Travel Deals List */}
+                  {travelDeals.map(deal => {
+                    const card = getCardForDeal(deal.cardId);
+                    const canAfford = canAffordWithCard(deal);
+                    
+                    return (
+                      <div key={deal.id} className="bg-white rounded-xl shadow-md overflow-hidden border border-slate-200">
+                        
+                        {/* Destination Header */}
+                        <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-4 text-center border-b border-slate-200">
+                          <div className="text-4xl mb-2">{deal.image}</div>
+                          <h4 className="font-bold text-slate-900 text-base">{deal.destination}</h4>
+                        </div>
+                        
+                        {/* Deal Details */}
+                        <div className="p-4">
+                          
+                          {/* Associated Card Badge */}
+                          {card && (
+                            <div className={`${card.color} text-white text-xs font-semibold px-2 py-1.5 rounded-lg mb-3 flex items-center gap-1.5`}>
+                              <CreditCard className="w-3.5 h-3.5" />
+                              <span className="truncate">{card.name}</span>
+                            </div>
+                          )}
+
+                          {/* Flight Details */}
+                          <div className="space-y-2 mb-3 text-sm">
+                            <div className="flex items-center justify-between">
+                              <span className="text-slate-600">Airline</span>
+                              <span className="font-semibold text-slate-900">{deal.airline}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-slate-600">Class</span>
+                              <span className="font-semibold text-slate-900">{deal.class}</span>
+                            </div>
+                          </div>
+                          
+                          {/* Points & Value */}
+                          <div className="border-t border-slate-200 pt-3 mb-3">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-2xl font-bold text-blue-600">{deal.points.toLocaleString()}</p>
+                                <p className="text-xs text-slate-500">points needed</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-xl font-bold text-green-600">{deal.savings}</p>
+                                <p className="text-xs text-slate-500">cash value</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Your Balance */}
+                          {card && (
+                            <div className="bg-slate-50 rounded-lg p-2 mb-3">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-slate-600">Your Balance</span>
+                                <span className="font-bold text-slate-900">{card.points.toLocaleString()} pts</span>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Action Button / Status */}
+                          {canAfford ? (
+                            <button className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-semibold text-sm active:scale-95 transition-transform">
+                              Book This Trip
+                            </button>
+                          ) : card ? (
+                            <div className="w-full bg-orange-50 border border-orange-200 text-orange-700 py-2.5 rounded-lg text-center text-xs font-semibold">
+                              Need {(deal.points - card.points).toLocaleString()} more points
+                            </div>
+                          ) : (
+                            <div className="w-full bg-slate-100 text-slate-600 py-2.5 rounded-lg text-center text-xs font-semibold">
+                              Card not found
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Home Indicator Bar - Fixed Height */}
+          <div className="bg-white py-2.5 flex justify-center flex-shrink-0">
+            <div className="w-36 h-1.5 bg-black rounded-full opacity-60"></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Add/Edit Card Modal - Bottom Sheet */}
+      {(showAddCard || editingCard) && (
+        <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50">
+          <div className="bg-white rounded-t-3xl w-full max-w-[390px] p-6 pb-8">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-slate-900">
+                {editingCard ? 'Edit Card' : 'Add New Card'}
+              </h3>
+              <button
+                onClick={() => {
+                  setShowAddCard(false);
+                  setEditingCard(null);
+                  setNewCard({ name: '', points: '', type: 'Travel', color: 'bg-gradient-to-br from-slate-700 to-slate-900', issuer: '', rewardsProgram: '' });
+                }}
+                className="p-2 hover:bg-slate-100 rounded-full active:scale-95 transition-transform"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            {/* Form Fields */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Card Name</label>
+                <input
+                  type="text"
+                  value={newCard.name}
+                  onChange={(e) => setNewCard({ ...newCard, name: e.target.value })}
+                  placeholder="Chase Sapphire Preferred"
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Issuer</label>
+                <input
+                  type="text"
+                  value={newCard.issuer}
+                  onChange={(e) => setNewCard({ ...newCard, issuer: e.target.value })}
+                  placeholder="Chase"
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Points Balance</label>
+                <input
+                  type="number"
+                  value={newCard.points}
+                  onChange={(e) => setNewCard({ ...newCard, points: e.target.value })}
+                  placeholder="50000"
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Rewards Program</label>
+                <input
+                  type="text"
+                  value={newCard.rewardsProgram}
+                  onChange={(e) => setNewCard({ ...newCard, rewardsProgram: e.target.value })}
+                  placeholder="Ultimate Rewards"
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Card Color</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {cardColors.map((color, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setNewCard({ ...newCard, color })}
+                      className={`h-12 rounded-xl ${color} ${
+                        newCard.color === color ? 'ring-2 ring-blue-600 ring-offset-2 scale-105' : ''
+                      } transition-transform active:scale-95`}
+                    />
+                  ))}
+                </div>
+              </div>
+              
+              {/* Submit Button */}
+              <button
+                onClick={editingCard ? handleUpdateCard : handleAddCard}
+                className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold active:scale-95 transition-transform"
+              >
+                {editingCard ? 'Save Changes' : 'Add Card'}
+              </button>
             </div>
           </div>
         </div>
-
-        {/* Context Menu */}
-        {contextMenu && (
-          <>
-            <div
-              className="fixed inset-0 z-20"
-              onClick={closeAll}
-            ></div>
-            <div
-              className="fixed z-30 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden"
-              style={{
-                left: `${contextMenu.x}px`,
-                top: `${contextMenu.y + 10}px`,
-                transform: 'translateX(-50%)',
-                minWidth: '220px'
-              }}
-            >
-              <div className="py-2">
-                <button
-                  className="w-full px-4 py-3 text-left hover:bg-gray-100 transition-colors text-sm"
-                  onClick={handleSetTimeLimit}
-                >
-                  <div className="flex items-center gap-3">
-                    <Clock className="w-5 h-5 text-blue-500" />
-                    <span className="font-medium">Set Time Limit</span>
-                  </div>
-                </button>
-                <button
-                  className="w-full px-4 py-3 text-left hover:bg-gray-100 transition-colors text-sm text-gray-600"
-                  onClick={closeAll}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Time Picker Modal */}
-        {showTimePicker && (
-          <>
-            <div
-              className="fixed inset-0 bg-black/50 z-40"
-              onClick={closeAll}
-            ></div>
-            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-3xl shadow-2xl p-6 w-80">
-              <h3 className="text-lg font-semibold mb-4 text-center">
-                Set Time Limit for {selectedApp?.name}
-              </h3>
-              
-              <div className="flex items-center justify-center gap-4 mb-6">
-                {/* Hours Picker */}
-                <div className="flex flex-col items-center">
-                  <button
-                    onClick={() => setHours((h) => Math.min(23, h + 1))}
-                    className="w-10 h-10 flex items-center justify-center text-blue-500 text-2xl hover:bg-gray-100 rounded-lg"
-                  >
-                    +
-                  </button>
-                  <div className="my-2 text-3xl font-bold w-16 text-center">
-                    {hours.toString().padStart(2, '0')}
-                  </div>
-                  <button
-                    onClick={() => setHours((h) => Math.max(0, h - 1))}
-                    className="w-10 h-10 flex items-center justify-center text-blue-500 text-2xl hover:bg-gray-100 rounded-lg"
-                  >
-                    −
-                  </button>
-                  <span className="text-xs text-gray-500 mt-1">hours</span>
-                </div>
-
-                <span className="text-3xl font-bold mb-8">:</span>
-
-                {/* Minutes Picker */}
-                <div className="flex flex-col items-center">
-                  <button
-                    onClick={() => setMinutes((m) => (m + 5) % 60)}
-                    className="w-10 h-10 flex items-center justify-center text-blue-500 text-2xl hover:bg-gray-100 rounded-lg"
-                  >
-                    +
-                  </button>
-                  <div className="my-2 text-3xl font-bold w-16 text-center">
-                    {minutes.toString().padStart(2, '0')}
-                  </div>
-                  <button
-                    onClick={() => setMinutes((m) => (m - 5 + 60) % 60)}
-                    className="w-10 h-10 flex items-center justify-center text-blue-500 text-2xl hover:bg-gray-100 rounded-lg"
-                  >
-                    −
-                  </button>
-                  <span className="text-xs text-gray-500 mt-1">minutes</span>
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={closeAll}
-                  className="flex-1 py-3 px-4 bg-gray-200 hover:bg-gray-300 rounded-xl font-medium transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleConfirmTimeLimit}
-                  className="flex-1 py-3 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-colors"
-                >
-                  Set Limit
-                </button>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
+      )}
     </div>
   );
-}
+};
+
+export default CreditCardDashboard;
